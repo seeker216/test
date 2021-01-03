@@ -4,7 +4,9 @@ import java.util.Map;
 
 public class MemoryCache {
     private int maxSize=20;
-
+    private double[] max;
+    private double[] min;
+    private int numAttr;
     public int getMaxSize() {
         return maxSize;
     }
@@ -18,13 +20,30 @@ public class MemoryCache {
                 return size()>maxSize;
             }
         };
+        max=new double[0];
+        min=new double[0];
     }
     public MemoryCache(int size) {
         this.maxSize = size;
         cache = new HashMap<>();
     }
-    public void addTuple(String key,String value){
-        cache.put(key,value);
+    public void addTuple(String[] kv){
+        String[] attrStr=kv[1].split(" ");
+        numAttr=attrStr.length;
+        double[] attrVal=new double[numAttr];
+        for (int i=0;i<numAttr;i++){
+            attrVal[i]=Double.valueOf(attrStr[i]);
+        }
+        if (max.length==0){
+            max=new double[numAttr];
+            min=new double[numAttr];
+        }
+        for (int i=0;i<numAttr;i++){
+            max[i]= Math.max(max[i],attrVal[i]);
+            min[i]=Math.min(min[i],attrVal[i]);
+        }
+        cache.put(kv[0],kv[1]);
+
     }
 
     public int getMcSize(){
@@ -34,15 +53,23 @@ public class MemoryCache {
     public void compressMc(){
 
     }
-
     public void computeDistance(String[] kv){
-        int numAttr=kv[1].split(" ").length;
-        double[] max=new double[numAttr];
-        double[] min=new double[numAttr];
-        for (Map.Entry entry:cache.entrySet()){
-            for (int i=0;i<numAttr;i++){
+        double dis=0;
+        double[] vals1=str2val(kv[1]);
 
+        for (Map.Entry entry:cache.entrySet()){
+            double[] vals2=str2val(entry.getValue().toString());
+            for (int i=0;i<numAttr;i++){
+                dis+=(Math.abs(vals1[i]-vals2[i])-min[i])/(max[i]-min[i]);
             }
         }
+    }
+    public double[] str2val(String str){
+        String[] strs=str.split(" ");
+        double[] vals=new double[strs.length];
+        for (int i=0;i<strs.length;i++){
+            vals[i]=Double.valueOf(strs[i]);
+        }
+        return vals;
     }
 }

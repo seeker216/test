@@ -87,7 +87,7 @@ public class ReadXlsx {
                 if(DateUtil.isCellDateFormatted(cell)) {
                     if (format==14){
                         val =   Date2Str(cell.getDateCellValue(), "yyyy-MM-dd");
-                    }else if (format==21){
+                    }else if (format==176){
                         val =   Date2Str(cell.getDateCellValue(), "HH:mm:ss");
                     }
                 }else {

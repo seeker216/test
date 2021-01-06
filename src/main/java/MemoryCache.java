@@ -74,9 +74,19 @@ public class MemoryCache {
             currDis=getDistance(computeDistance(new String[]{kv[0],currVal}));
         }while (currDis>origiDis);
         if (currVal!=kv[1]&&currDis/origiDis<0.75){
-
-            System.out.println("old:"+kv[1]);
-            System.out.println("new:"+currVal);
+//        if (currVal!=kv[1]){
+            String[] olds=kv[1].split(" ");
+            String old="";
+            for (String s:olds){
+                old+=String.format("%10s",s);
+            }
+            String[] news=currVal.split(" ");
+            String ne="";
+            for (String s:news){
+                ne+=String.format("%10s",s);
+            }
+            System.out.println("old:"+old);
+            System.out.println("new:"+ne);
         }
     }
 

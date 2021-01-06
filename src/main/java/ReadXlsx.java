@@ -53,7 +53,7 @@ public class ReadXlsx {
         }
 
         numRow=0;
-        System.out.println("ok:"+num);
+//        System.out.println("ok:"+num);
 
         return num;
     }
@@ -87,7 +87,7 @@ public class ReadXlsx {
                 if(DateUtil.isCellDateFormatted(cell)) {
                     if (format==14){
                         val =   Date2Str(cell.getDateCellValue(), "yyyy-MM-dd");
-                    }else if (format==176){
+                    }else if (format==176||format==21){
                         val =   Date2Str(cell.getDateCellValue(), "HH:mm:ss");
                     }
                 }else {

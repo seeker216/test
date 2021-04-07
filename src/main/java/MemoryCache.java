@@ -4,11 +4,11 @@ import javax.xml.crypto.Data;
 import java.util.*;
 
 public class MemoryCache {
-    private int maxSize = 20;
+    private int maxSize = 40;
     private double[] max;
     private double[] min;
     private int numAttr;
-    private static int k;
+    private static int INT_K = 3;
 
     public int getMaxSize() {
         return maxSize;
@@ -76,55 +76,112 @@ public class MemoryCache {
     |Z|=|X|/2
      */
     public void compressMcSimple(int iterNum, double stepSize) {
-        double[] y = new double[getMaxSize()];
+        double[] y = new double[getMaxSize()/2];
         Arrays.fill(y, 0.5d);
+
+        List<DataNode> allTuples=new ArrayList<>();
+
+        for (Map.Entry e:cache.entrySet()){
+            allTuples.add(new DataNode((String) e.getKey(),(String) e.getValue()));
+        }
+
+        Collections.sort(allTuples, new Comparator<DataNode>() {
+            @Override
+            public int compare(DataNode o1, DataNode o2) {
+                int res=o1.getNodeName().compareTo(o2.getNodeName());
+                if (res<0){
+                    return -1;
+                }else if (res>0){
+                    return 1;
+                }else {
+                    return 0;
+                }
+            }
+        });
+
+        for(int i=getMaxSize()-1;i>=getMaxSize()/2;i--){
+            allTuples.remove(i);
+        }
+
+        LofCompute lc=new LofCompute(allTuples);
 
         Map<String, String> newCache = new HashMap<>();//Z
         for (int i = 0; i < iterNum; i++) {
             stepSize *= 0.95;
-            for (int j = 0; j < getMaxSize() / 2; j++) {
+            for (int j = 0; j < allTuples.size(); j++) {
 //                y[j]=y[j]-stepSize*(sum(xi in Ck,n , y[i])+pk(xn)/vk(xn)-e^lof(xn)+)
-//                y[j]=y[j]-stepSize*(computePrePk(j)/computeVk(j)-Math.exp(computeLof(j))+adjustYn(y[j])+(getSum(y)-getMaxSize()/4));
+                y[j]=y[j]-stepSize*(computePrePk(j)/computeVk(j)-Math.exp(allTuples.get(j).getLof())+adjustYn(y[j])+(getSum(y)-getMaxSize()/4));
 
             }
         }
-        Queue<Map.Entry> q = new PriorityQueue<>(new Comparator<Map.Entry>() {
+        Map<Integer,Double> pairs=new HashMap<>();
+        for (int i=0;i<y.length;i++){
+            pairs.put(i,y[i]);
+        }
+        Map.Entry[] me= pairs.entrySet().toArray(new Map.Entry[0]);
+        Arrays.sort(me, new Comparator<Map.Entry>() {
             @Override
             public int compare(Map.Entry o1, Map.Entry o2) {
-                return ((Integer) o2.getValue() - (Integer) o1.getValue());
+                Double res = ((Double)o1.getValue()-(Double) o2.getValue());
+                if (res>1e-3){
+                    return 1;
+                }else if (res<-1e-3){
+                    return -1;
+                }else{
+                    return 0;
+                }
             }
         });
-        for (int i = y.length - 1; i > getMaxSize() / 2; i--) {
-            y[i] = 1.0;
+        for (int i = me.length - 1; i > getMaxSize() / 2; i--) {
+            newCache.put(allTuples.get(i).getNodeName(),allTuples.get(i).getDimensionStr());
+
         }
-        cache = newCache;
+        cache = new HashMap<>(newCache);
     }
 
-    private double computeLof(int j) {
-        List<DataNode> dpoints=new ArrayList<>();
-        for (Map.Entry e:cache.entrySet()){
-            dpoints.add(new DataNode((String) e.getKey(),(String) e.getValue()));
+    private double getSum(double[] y) {
+        double res=0;
+        for (double yi:y){
+            res+=yi;
         }
-
-        return 0;
+        return res;
     }
+
+    private double adjustYn(double y) {
+        if (y-1>1e-3){
+            return (y-1)*(y-1);
+        }else if (y<0){
+            return y*y;
+        }else{
+            return 0;
+        }
+    }
+
+//    private double computeLof(int j) {
+//        List<DataNode> dpoints=new ArrayList<>();
+//        for (Map.Entry e:cache.entrySet()){
+//            dpoints.add(new DataNode((String) e.getKey(),(String) e.getValue()));
+//        }
+//
+//        return 0;
+//    }
 
     private double computeVk(int j) {
-        Map.Entry[] x = (Map.Entry[]) cache.entrySet().toArray();
+        Map.Entry[] x = cache.entrySet().toArray(new Map.Entry[0]);
         int len = getMaxSize();
         double[] disList = new double[len];
         for (int i = 0; i < len; i++) {
             disList[i] = compute2pointsDistance((String) x[j].getValue(), (String) x[i].getValue());
         }
         Arrays.sort(disList);
-        return disList[k];
+        return disList[INT_K];
     }
 
     /*
     初始时计算Pk(xn)
      */
     private double computePrePk(int j) {
-        Map.Entry[] x = (Map.Entry[]) cache.entrySet().toArray();
+        Map.Entry[] x = cache.entrySet().toArray(new Map.Entry[0]);
         int len = getMaxSize();
         double[] disList = new double[len];
         for (int i = 0; i < len; i++) {
@@ -132,7 +189,7 @@ public class MemoryCache {
         }
         Arrays.sort(disList);
 
-        return disList[getMaxSize() / 4 + k - 1];
+        return disList[getMaxSize() / 4 + INT_K - 1];
     }
 
     /*
@@ -141,6 +198,20 @@ public class MemoryCache {
     public void detectMisplace(String[] kv) {
         double[] disArr = computeDistance(kv);
         double origiDis = getDistance(disArr);
+
+        //交换修复
+        swapRepair(kv,disArr,origiDis);
+
+        //全排列修复
+//        permRepair(kv,origiDis);
+    }
+
+    private void permRepair(String[] kv, double origiDis) {
+
+    }
+
+    private void swapRepair(String[] kv,double[] disArr,double origiDis){
+        //开始交换
         double[][] disIdxArr = getSortIdxArr(disArr);
         double currDis = origiDis;
         String currVal = kv[1];
@@ -156,7 +227,7 @@ public class MemoryCache {
 //            origiDis=currDis;
             currDis = getDistance(computeDistance(new String[]{kv[0], currVal}));
         } while (currDis > origiDis);
-        if (currVal != kv[1] && currDis / origiDis < 0.85) {
+        if (currVal != kv[1] && currDis / origiDis < 0.9) {
 //        if (currVal!=kv[1]){
             String[] olds = kv[1].split(" ");
             String old = "";
@@ -168,6 +239,7 @@ public class MemoryCache {
             for (String s : news) {
                 ne += String.format("%10s", s);
             }
+            System.out.println(kv[0]);
             System.out.println("old:" + old);
             System.out.println("new:" + ne);
         }

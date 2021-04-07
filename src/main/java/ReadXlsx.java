@@ -60,12 +60,21 @@ public class ReadXlsx {
     public String[] getNextRow(int numRow){
         String key="";
         String value="";
-        for(numCol=0;numCol<2;numCol++){
-            key+=getValue(sheet.getRow(numRow).getCell(numCol))+" ";
+        String firstCell=getValue(sheet.getRow(1).getCell(0));
+        if (firstCell.length()<=10){
+            for(numCol=0;numCol<2;numCol++){
+                key+=getValue(sheet.getRow(numRow).getCell(numCol))+" ";
+            }
+            for(numCol=2;numCol<maxCol;numCol++){
+                value+=getValue(sheet.getRow(numRow).getCell(numCol))+" ";
+            }
+        }else{
+            key+=getValue(sheet.getRow(numRow).getCell(0))+" ";
+            for(numCol=1;numCol<maxCol;numCol++){
+                value+=getValue(sheet.getRow(numRow).getCell(numCol))+" ";
+            }
         }
-        for(numCol=2;numCol<maxCol;numCol++){
-            value+=getValue(sheet.getRow(numRow).getCell(numCol))+" ";
-        }
+
         return new String[]{key,value};
     }
     public static String getValue(Cell cell) {
@@ -89,6 +98,8 @@ public class ReadXlsx {
                         val =   Date2Str(cell.getDateCellValue(), "yyyy-MM-dd");
                     }else if (format==176||format==21){
                         val =   Date2Str(cell.getDateCellValue(), "HH:mm:ss");
+                    }else if (format==22){
+                        val =   Date2Str(cell.getDateCellValue(), "yyyy-MM-dd HH:mm:ss");
                     }
                 }else {
                     // 四舍五入

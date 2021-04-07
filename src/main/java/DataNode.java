@@ -14,13 +14,18 @@ public class DataNode {
 
     public DataNode(String nodeName, String dimensioin) {
         this.nodeName = nodeName;
-        String[] dimStrs=dimensioin.split(",");
+        String[] dimStrs=dimensioin.split(" ");
         int len=dimStrs.length;
         double[] dims=new double[len];
         for (int i=0;i<len;i++){
             dims[i]=Double.valueOf(dimStrs[i]);
         }
         this.dimensioin = dims;
+    }
+
+    public DataNode(String nodeName, double[] dimensioin){
+        this.nodeName=nodeName;
+        this.dimensioin=dimensioin;
     }
 
     public String getNodeName() {
@@ -85,5 +90,13 @@ public class DataNode {
 
     public void setLof(double lof) {
         this.lof = lof;
+    }
+
+    public String getDimensionStr(){
+        String res="";
+        for (double d:this.dimensioin){
+            res+=d+" ";
+        }
+        return res.substring(0,res.length()-1);
     }
 }

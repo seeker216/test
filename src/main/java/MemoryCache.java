@@ -8,10 +8,15 @@ public class MemoryCache {
     private double[] max;
     private double[] min;
     private int numAttr;
+    private double rms;
     private static int INT_K = 3;
 
     public int getMaxSize() {
         return maxSize;
+    }
+
+    public double getRms() {
+        return rms;
     }
 
     //    private int size;
@@ -207,7 +212,7 @@ public class MemoryCache {
     }
 
     private void permRepair(String[] kv, double origiDis) {
-
+        
     }
 
     private void swapRepair(String[] kv,double[] disArr,double origiDis){
@@ -242,7 +247,25 @@ public class MemoryCache {
             System.out.println(kv[0]);
             System.out.println("old:" + old);
             System.out.println("new:" + ne);
+
+            rms=calRMS(olds,news);
         }
+    }
+
+    private double calRMS(String[] olds, String[] news) {
+        double ans=0;
+        if (olds.length!=news.length){
+            System.err.println("lengths are not equal");
+            return ans;
+        }
+        int len=olds.length;
+        for (int i=0;i<len;i++){
+            double d1=Double.valueOf(olds[i]);
+            double d2=Double.valueOf(news[i]);
+            ans+=(d1-d2)*(d1-d2);
+        }
+        ans=Math.sqrt(ans/len);
+        return ans;
     }
 
     private double[][] getSortIdxArr(double[] attrArr) {

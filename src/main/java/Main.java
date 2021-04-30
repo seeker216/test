@@ -4,8 +4,8 @@ import weka.core.converters.ConverterUtils.DataSource;
 public class Main {
     public static void main(String[] args) {
 //        String path=Main.class.getClassLoader().getResource("AirQualityUCI.xlsx").getPath();
-        String path=Main.class.getClassLoader().getResource("LessAir2.xlsx").getPath();
-//        String path=Main.class.getClassLoader().getResource("energydata_complete.xlsx").getPath();
+//        String path=Main.class.getClassLoader().getResource("LessAir2.xlsx").getPath();
+        String path=Main.class.getClassLoader().getResource("energydata_complete.xlsx").getPath();
         ReadXlsx rx=new ReadXlsx(path);
         MemoryCache mc=new MemoryCache();
         int maxRow=rx.getMaxRow();
@@ -23,5 +23,6 @@ public class Main {
                 mc.compressMcSimple(10,1);
             }
         }
+        System.out.println("avg RMS:"+mc.getRms()/rx.getMaxRow());
     }
 }

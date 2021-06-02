@@ -232,7 +232,7 @@ public class MemoryCache {
 //            origiDis=currDis;
             currDis = getDistance(computeDistance(new String[]{kv[0], currVal}));
         } while (currDis > origiDis);
-        if (currVal != kv[1] && currDis / origiDis < 0.9) {
+        if (currVal != kv[1] && currDis / origiDis < 1) {
 //        if (currVal!=kv[1]){
             String[] olds = kv[1].split(" ");
             String old = "";

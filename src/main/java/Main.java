@@ -3,9 +3,14 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 public class Main {
     public static void main(String[] args) {
-//        String path=Main.class.getClassLoader().getResource("AirQualityUCI.xlsx").getPath();
-//        String path=Main.class.getClassLoader().getResource("LessAir2.xlsx").getPath();
-        String path=Main.class.getClassLoader().getResource("energydata_complete.xlsx").getPath();
+
+        q1test();
+
+//        q2test();
+    }
+
+    public static void q1test(){
+        String path=Main.class.getClassLoader().getResource("LessAir2.xlsx").getPath();
         ReadXlsx rx=new ReadXlsx(path);
         MemoryCache mc=new MemoryCache();
         int maxRow=rx.getMaxRow();
@@ -25,4 +30,18 @@ public class Main {
         }
         System.out.println("avg RMS:"+mc.getRms()/rx.getMaxRow());
     }
+
+    public static void q2test(){
+        String path=Main.class.getClassLoader().getResource("LessAir2.xlsx").getPath();
+        ReadXlsx rx=new ReadXlsx(path);
+        int maxRow=rx.getMaxRow();
+        AttrCorr ac=new AttrCorr(rx,maxRow);
+        int i=1;
+        ac.init(rx,i);
+        for (;i<maxRow;i++){
+            String[] kv=rx.getNextRow(i);
+            ac.processTuple(kv);
+        }
+    }
+
 }
